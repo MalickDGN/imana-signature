@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 390" role="img" aria-labelledby="title">
+  <title id="title">IMANA Signature</title>
+  <g fill="none" stroke="#b89055" stroke-width="9" stroke-linejoin="miter">
+    <path d="M150 24 194 66 150 108 106 66Z"/>
+    <path d="M108 128h84v70h-50l50 48v80h-84v-70h50l-50-48Z"/>
+  </g>
+  <text x="150" y="354" fill="#d3ad70" font-family="Arial, Helvetica, sans-serif" font-size="34" letter-spacing="12" text-anchor="middle">IMANA</text>
+  <text x="150" y="382" fill="#b89055" font-family="Arial, Helvetica, sans-serif" font-size="16" letter-spacing="8" text-anchor="middle">signature</text>
+</svg>

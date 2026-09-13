@@ -1,0 +1,37 @@
+services:
+  nginx:
+    build:
+      context: ./infrastructure/nginx
+    container_name: imana-nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - frontend-web
+      - api-gateway
+    networks:
+      - imana-network
+
+  frontend-web:
+    build:
+      context: .
+      dockerfile: apps/frontend-web/Dockerfile
+    container_name: imana-frontend-web-prod
+    environment:
+      - NODE_ENV=production
+      - API_GATEWAY_URL=http://api-gateway:3001
+    networks:
+      - imana-network
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: apps/api-gateway/Dockerfile
+    container_name: imana-api-gateway-prod
+    env_file:
+      - .env
+    networks:
+      - imana-network
+
+networks:
+  imana-network:
+    driver: bridge

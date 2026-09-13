@@ -1,0 +1,43 @@
+{
+  "name": "@imana-signature/frontend-web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "sync:storefront": "node scripts/sync-storefront.mjs",
+    "dev": "node scripts/sync-storefront.mjs && next dev",
+    "build": "node scripts/sync-storefront.mjs && next build",
+    "start": "next start",
+    "lint": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "next": "15.5.25",
+    "zustand": "^4.5.2",
+    "@imana-signature/utils": "workspace:*",
+    "@imana-signature/ui-kit": "workspace:*",
+    "@imana-signature/shared-types": "workspace:*",
+    "lucide-react": "^0.468.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.1.0",
+    "@testing-library/user-event": "^14.5.2",
+    "autoprefixer": "^10.4.19",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.0",
+    "eslint": "^9.6.0",
+    "prettier": "^3.2.5",
+    "husky": "^9.0.11",
+    "jsdom": "^25.0.1",
+    "lint-staged": "^15.2.2",
+    "vitest": "^2.1.9"
+  }
+}

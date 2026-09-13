@@ -1,0 +1,1 @@
+{"version":3,"file":"cart.js","sourceRoot":"","sources":["cart.ts"],"names":[],"mappings":"","sourcesContent":["import type { Product } from './product';\n\r\nexport interface CartItem extends Product {\r\n  quantity: number;\r\n}\n"]}

@@ -1,0 +1,262 @@
+openapi: 3.0.3
+info:
+  title: IMANA Signature API Gateway
+  version: 1.1.0
+servers:
+  - url: http://localhost:3001/api
+    description: Local API Gateway
+
+paths:
+  /healthz:
+    get:
+      summary: Check API availability
+      responses:
+        '200':
+          description: API is running
+
+  /products:
+    get:
+      summary: List products available for sale in Odoo
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [name_asc, price_asc, price_desc]
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+      responses:
+        '200':
+          description: Product list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+        '503':
+          description: Odoo is unavailable
+
+  /products/categories:
+    get:
+      summary: List product categories represented in the sale catalog
+      responses:
+        '200':
+          description: Product categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductCategory'
+        '503':
+          description: Odoo is unavailable
+
+  /products/{productId}:
+    get:
+      summary: Retrieve a product by its Odoo ID
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Product
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '404':
+          description: Product not found
+        '503':
+          description: Odoo is unavailable
+
+  /orders:
+    post:
+      summary: Create an Odoo sales order
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrder'
+      responses:
+        '201':
+          description: Order created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateOrderResult'
+        '400':
+          description: Invalid payload
+        '503':
+          description: Odoo is unavailable
+
+  /contacts:
+    post:
+      summary: Create a lead in Odoo CRM
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateContact'
+      responses:
+        '201':
+          description: Lead received
+        '400':
+          description: Invalid payload
+        '503':
+          description: Odoo is unavailable
+
+components:
+  schemas:
+    Product:
+      type: object
+      required: [id, name, price]
+      properties:
+        id:
+          type: string
+          pattern: '^[1-9][0-9]*$'
+        name:
+          type: string
+        price:
+          type: number
+          minimum: 0
+        description:
+          type: string
+        imageUrl:
+          type: string
+          format: uri
+        stock:
+          type: number
+        category:
+          type: string
+        categoryId:
+          type: string
+
+    ProductCategory:
+      type: object
+      required: [id, name]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+
+    OrderItem:
+      type: object
+      additionalProperties: false
+      required: [id, quantity]
+      properties:
+        id:
+          type: string
+          pattern: '^[1-9][0-9]*$'
+        quantity:
+          type: integer
+          minimum: 1
+
+    ShippingAddress:
+      type: object
+      additionalProperties: false
+      required: [name, email, phone, address, city]
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        address:
+          type: string
+        city:
+          type: string
+
+    ShippingMethod:
+      type: object
+      additionalProperties: false
+      required: [code, name, price]
+      properties:
+        code:
+          type: string
+          enum: [standard, express]
+        name:
+          type: string
+        price:
+          type: number
+          minimum: 0
+
+    Payment:
+      type: object
+      additionalProperties: false
+      required: [method]
+      properties:
+        method:
+          type: string
+          enum: [cod, mobile]
+        provider:
+          type: string
+          enum: [wave, orange-money]
+
+    CreateOrder:
+      type: object
+      additionalProperties: false
+      required: [items, shippingAddress, shippingMethod, payment]
+      properties:
+        items:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/OrderItem'
+        shippingAddress:
+          $ref: '#/components/schemas/ShippingAddress'
+        shippingMethod:
+          $ref: '#/components/schemas/ShippingMethod'
+        payment:
+          $ref: '#/components/schemas/Payment'
+
+    CreateOrderResult:
+      type: object
+      required: [id, status, message]
+      properties:
+        id:
+          type: integer
+        status:
+          type: string
+          enum: [pending_payment, confirmed]
+        message:
+          type: string
+
+    CreateContact:
+      type: object
+      additionalProperties: false
+      required: [name, email, message]
+      properties:
+        name:
+          type: string
+          maxLength: 120
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+          maxLength: 30
+        message:
+          type: string
+          maxLength: 2000

@@ -109,6 +109,14 @@ test("ne confirme que le statut réellement stocké de la commande", async () =>
   assert.equal(unknown.status, 404);
 });
 
+test("refuse proprement le paiement sans secret Stripe", async () => {
+  const response = await post("/api/checkout", {
+    items: [{ id: 1, quantity: 1 }],
+  });
+  assert.equal(response.status, 503);
+  assert.match((await response.json()).error, /Paiement non configuré/);
+});
+
 test("interdit l’administration aux clients et autorise l’administrateur", async () => {
   const clientLogin = await post("/api/auth/login", {
     email: `race-${process.pid}@example.com`,

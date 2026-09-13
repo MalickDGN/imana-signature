@@ -1,0 +1,13 @@
+node_modules/
+.env
+/data/
+playwright-report/
+test-results/
+.DS_Store
+.firebase/
+firebase-public/
+firebase-debug.log
+debug.log
+*.tar.gz
+cloudflare-site/.git.sites-backup/
+cloudflare-site/.sites-package-stage/

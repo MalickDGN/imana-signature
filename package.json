@@ -7,13 +7,44 @@
     "start": "node server/app.js",
     "dev": "node --watch server/app.js",
     "images": "node scripts/optimize-images.mjs",
-    "test": "node --test tests/unit/*.test.js",
-    "test:e2e": "playwright test",
-    "test:all": "npm run test && npm run test:e2e"
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "build": "turbo run build",
+    "test": "npm run test:storefront && turbo run test",
+    "test:storefront": "node --test tests/unit/*.test.js",
+    "test:e2e": "playwright test --config playwright.frontend.config.js",
+    "test:frontend": "playwright test --config playwright.frontend.config.js",
+    "test:all": "npm run test && npm run test:e2e",
+    "build:platform": "pnpm run build",
+    "dev:platform": "pnpm -r --parallel --if-present run dev",
+    "lint:platform": "npm run lint",
+    "typecheck:platform": "npm run typecheck",
+    "test:platform": "npm run test",
+    "build:turbo": "npm run build"
   },
-  "engines": { "node": ">=22.5" },
+  "engines": { "node": ">=22.5", "pnpm": ">=8.0.0" },
+  "packageManager": "pnpm@8.15.4",
+  "pnpm": {
+    "overrides": {
+      "qs": ">=6.16.0",
+      "@xmldom/xmldom": ">=0.8.15",
+      "tar": ">=7.5.21",
+      "multer": ">=2.3.0",
+      "next": ">=15.5.25",
+      "postcss": ">=8.5.18",
+      "lodash": ">=4.18.0",
+      "nanoid": ">=3.3.18",
+      "uuid": ">=11.1.1",
+      "body-parser": ">=1.20.6",
+      "browserslist": ">=4.28.7",
+      "brace-expansion@2": ">=2.1.4",
+      "brace-expansion@1": ">=1.1.18",
+      "file-type": ">=21.3.2"
+    }
+  },
   "devDependencies": {
-    "@playwright/test": "^1.61.1"
+    "@playwright/test": "^1.61.1",
+    "turbo": "^2.10.1"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

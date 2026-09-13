@@ -1,0 +1,287 @@
+luxury-platform/
+│
+├── README.md
+├── .gitignore
+├── .env.example
+├── turbo.json                     # Monorepo orchestration
+├── pnpm-workspace.yaml
+├── docker-compose.yml
+├── Makefile
+│
+├── apps/
+│   │
+│   ├── frontend-web/              # Customer luxury storefront
+│   │   ├── public/
+│   │   ├── src/
+│   │   │   ├── app/
+│   │   │   │   ├── (public)/
+│   │   │   │   ├── (auth)/
+│   │   │   │   ├── shop/
+│   │   │   │   ├── collections/
+│   │   │   │   ├── perfume/
+│   │   │   │   ├── concierge/
+│   │   │   │   ├── checkout/
+│   │   │   │   ├── account/
+│   │   │   │   ├── wishlist/
+│   │   │   │   ├── orders/
+│   │   │   │   └── api/
+│   │   │   │
+│   │   │   ├── components/
+│   │   │   │   ├── ui/
+│   │   │   │   ├── luxury/
+│   │   │   │   ├── perfume/
+│   │   │   │   ├── checkout/
+│   │   │   │   └── animations/
+│   │   │   │
+│   │   │   ├── services/
+│   │   │   ├── hooks/
+│   │   │   ├── store/
+│   │   │   ├── lib/
+│   │   │   ├── styles/
+│   │   │   ├── types/
+│   │   │   └── middleware.ts
+│   │   │
+│   │   ├── tests/
+│   │   ├── package.json
+│   │   ├── next.config.js
+│   │   ├── tailwind.config.ts
+│   │   ├── tsconfig.json
+│   │   └── Dockerfile
+│   │
+│   ├── mobile-app/                # React Native / Expo
+│   │   ├── src/
+│   │   │   ├── screens/
+│   │   │   ├── navigation/
+│   │   │   ├── components/
+│   │   │   ├── services/
+│   │   │   ├── store/
+│   │   │   ├── hooks/
+│   │   │   ├── utils/
+│   │   │   └── assets/
+│   │   │
+│   │   ├── ios/
+│   │   ├── android/
+│   │   ├── app.json
+│   │   ├── package.json
+│   │   └── tsconfig.json
+│   │
+│   ├── api-gateway/               # Central API Layer
+│   │   ├── src/
+│   │   │   ├── modules/
+│   │   │   │   ├── auth/
+│   │   │   │   ├── users/
+│   │   │   │   ├── products/
+│   │   │   │   ├── orders/
+│   │   │   │   ├── checkout/
+│   │   │   │   ├── concierge/
+│   │   │   │   ├── analytics/
+│   │   │   │   └── webhooks/
+│   │   │   │
+│   │   │   ├── middlewares/
+│   │   │   ├── guards/
+│   │   │   ├── interceptors/
+│   │   │   ├── config/
+│   │   │   ├── common/
+│   │   │   ├── integrations/
+│   │   │   │   ├── odoo/
+│   │   │   │   ├── stripe/
+│   │   │   │   ├── elasticsearch/
+│   │   │   │   └── redis/
+│   │   │   │
+│   │   │   ├── app.module.ts
+│   │   │   └── main.ts
+│   │   │
+│   │   ├── tests/
+│   │   ├── package.json
+│   │   ├── tsconfig.json
+│   │   └── Dockerfile
+│   │
+│   └── admin-portal/              # Internal backoffice
+│       ├── src/
+│       │   ├── app/
+│       │   ├── modules/
+│       │   │   ├── dashboard/
+│       │   │   ├── inventory/
+│       │   │   ├── customers/
+│       │   │   ├── crm/
+│       │   │   ├── orders/
+│       │   │   ├── vendors/
+│       │   │   ├── analytics/
+│       │   │   └── settings/
+│       │   │
+│       │   ├── components/
+│       │   ├── services/
+│       │   ├── hooks/
+│       │   └── store/
+│       │
+│       ├── package.json
+│       ├── tsconfig.json
+│       └── Dockerfile
+│
+├── services/
+│   │
+│   ├── payment-service/
+│   │   ├── src/
+│   │   │   ├── providers/
+│   │   │   │   ├── stripe/
+│   │   │   │   ├── paypal/
+│   │   │   │   └── mobile-money/
+│   │   │   │
+│   │   │   ├── webhooks/
+│   │   │   ├── transactions/
+│   │   │   ├── refunds/
+│   │   │   └── security/
+│   │   │
+│   │   ├── tests/
+│   │   └── Dockerfile
+│   │
+│   ├── delivery-service/
+│   │   ├── src/
+│   │   │   ├── carriers/
+│   │   │   ├── tracking/
+│   │   │   ├── shipping/
+│   │   │   ├── logistics/
+│   │   │   └── warehouse/
+│   │   │
+│   │   └── Dockerfile
+│   │
+│   ├── notification-service/
+│   │   ├── src/
+│   │   │   ├── email/
+│   │   │   ├── sms/
+│   │   │   ├── push/
+│   │   │   ├── whatsapp/
+│   │   │   └── templates/
+│   │   │
+│   │   └── Dockerfile
+│   │
+│   └── search-service/
+│       ├── src/
+│       │   ├── elasticsearch/
+│       │   ├── indexing/
+│       │   ├── recommendations/
+│       │   ├── ai-search/
+│       │   └── filters/
+│       │
+│       └── Dockerfile
+│
+├── odoo/
+│   │
+│   ├── custom-addons/
+│   │   ├── luxury_core/
+│   │   ├── luxury_perfume/
+│   │   ├── luxury_inventory/
+│   │   ├── luxury_orders/
+│   │   ├── luxury_marketplace/
+│   │   ├── luxury_crm/
+│   │   ├── luxury_loyalty/
+│   │   ├── luxury_vendors/
+│   │   ├── luxury_concierge/
+│   │   └── luxury_analytics/
+│   │
+│   ├── config/
+│   │   ├── odoo.conf
+│   │   └── logging.conf
+│   │
+│   ├── docker/
+│   │   ├── Dockerfile
+│   │   ├── entrypoint.sh
+│   │   └── init-db.sh
+│   │
+│   └── backups/
+│
+├── infrastructure/
+│   │
+│   ├── nginx/
+│   │   ├── nginx.conf
+│   │   ├── conf.d/
+│   │   └── ssl/
+│   │
+│   ├── docker/
+│   │   ├── dev/
+│   │   ├── staging/
+│   │   └── production/
+│   │
+│   ├── kubernetes/
+│   │   ├── namespaces/
+│   │   ├── frontend/
+│   │   ├── backend/
+│   │   ├── services/
+│   │   ├── ingress/
+│   │   ├── monitoring/
+│   │   └── secrets/
+│   │
+│   ├── terraform/
+│   │   ├── aws/
+│   │   │   ├── networking/
+│   │   │   ├── eks/
+│   │   │   ├── rds/
+│   │   │   ├── redis/
+│   │   │   ├── s3/
+│   │   │   └── cloudfront/
+│   │   │
+│   │   └── modules/
+│   │
+│   └── monitoring/
+│       ├── prometheus/
+│       ├── grafana/
+│       ├── loki/
+│       └── sentry/
+│
+├── packages/
+│   │
+│   ├── ui-kit/                    # Shared design system
+│   │   ├── src/
+│   │   │   ├── components/
+│   │   │   ├── themes/
+│   │   │   ├── tokens/
+│   │   │   └── animations/
+│   │   │
+│   │   ├── package.json
+│   │   └── tsconfig.json
+│   │
+│   ├── shared-types/
+│   │   ├── src/
+│   │   │   ├── auth/
+│   │   │   ├── product/
+│   │   │   ├── order/
+│   │   │   ├── payment/
+│   │   │   └── customer/
+│   │   │
+│   │   └── package.json
+│   │
+│   └── utils/
+│       ├── src/
+│       │   ├── helpers/
+│       │   ├── constants/
+│       │   ├── validators/
+│       │   └── formatters/
+│       │
+│       └── package.json
+│
+└── docs/
+    ├── architecture/
+    │   ├── system-design.md
+    │   ├── microservices.md
+    │   ├── event-driven.md
+    │   └── security.md
+    │
+    ├── api/
+    │   ├── openapi.yaml
+    │   └── postman-collection.json
+    │
+    ├── deployment/
+    │   ├── kubernetes.md
+    │   ├── terraform.md
+    │   └── ci-cd.md
+    │
+    ├── business/
+    │   ├── marketplace-flow.md
+    │   ├── perfume-catalog.md
+    │   └── concierge-workflow.md
+    │
+    └── onboarding/
+        ├── frontend.md
+        ├── backend.md
+        ├── devops.md
+        └── coding-guidelines.md

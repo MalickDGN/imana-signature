@@ -1,0 +1,179 @@
+x-node-volumes: &node-volumes
+  - type: bind
+    source: .
+    target: /app
+  - node-root:/app/node_modules
+  - node-frontend:/app/apps/frontend-web/node_modules
+  - node-api:/app/apps/api-gateway/node_modules
+  - node-admin:/app/apps/admin-portal/node_modules
+  - node-mobile:/app/apps/mobile-app/node_modules
+  - node-shared-types:/app/packages/shared-types/node_modules
+  - node-ui-kit:/app/packages/ui-kit/node_modules
+  - node-utils:/app/packages/utils/node_modules
+  - type: bind
+    source: ${PNPM_STORE_PATH:-./.pnpm-store/v3}
+    target: /pnpm/store/v3
+
+services:
+  node-dependencies:
+    build:
+      context: .
+      dockerfile: infrastructure/node/Dockerfile.dev
+    image: imana-node-dev
+    container_name: imana-node-dependencies
+    working_dir: /app
+    command: >
+      sh -c "pnpm config set store-dir /pnpm/store &&
+      pnpm install --frozen-lockfile"
+    volumes: *node-volumes
+    restart: "no"
+
+  frontend-web:
+    build:
+      context: .
+      dockerfile: infrastructure/node/Dockerfile.dev
+    image: imana-node-dev
+    container_name: imana-frontend-web
+    working_dir: /app
+    command: pnpm --filter @imana-signature/frontend-web dev -H 0.0.0.0
+    volumes: *node-volumes
+    environment:
+      - NODE_ENV=development
+      - PORT=3000 # Port interne pour Next.js
+      - API_GATEWAY_URL=http://api-gateway:3001
+      - NEXT_PUBLIC_SITE_URL=http://localhost:${FRONTEND_PORT:-3005}
+    ports:
+      - "${FRONTEND_PORT:-3005}:3000"
+    depends_on:
+      node-dependencies:
+        condition: service_completed_successfully
+      api-gateway:
+        condition: service_started
+    networks:
+      - imana-network
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: infrastructure/node/Dockerfile.dev
+    image: imana-node-dev
+    container_name: imana-api-gateway
+    working_dir: /app
+    command: pnpm --filter @imana-signature/api-gateway dev
+    volumes: *node-volumes
+    environment:
+      - NODE_ENV=development 
+      - PORT=3001 # Port interne pour NestJS
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - PORTAL_DB_SCHEMA=imana_portal
+      - ADMIN_IMPORT_TOKEN=${ADMIN_IMPORT_TOKEN}
+      - ODOO_URL=http://odoo:8069
+      - ODOO_DB=${ODOO_DB}
+      - ODOO_USERNAME=${ODOO_USERNAME}
+      - ODOO_PASSWORD=${ODOO_PASSWORD}
+      - ODOO_SHIPPING_STANDARD_PRODUCT_ID=${ODOO_SHIPPING_STANDARD_PRODUCT_ID}
+      - ODOO_SHIPPING_EXPRESS_PRODUCT_ID=${ODOO_SHIPPING_EXPRESS_PRODUCT_ID}
+    ports:
+      - "${API_GATEWAY_PORT:-4000}:3001"
+    depends_on:
+      node-dependencies:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      odoo:
+        condition: service_started
+    networks:
+      - imana-network
+
+  admin-portal:
+    build:
+      context: .
+      dockerfile: infrastructure/node/Dockerfile.dev
+    image: imana-node-dev
+    container_name: imana-admin-portal
+    working_dir: /app
+    command: pnpm --filter @imana-signature/admin-portal dev
+    volumes: *node-volumes
+    environment:
+      - NODE_ENV=development 
+      - PORT=3002 # Port interne pour Next.js
+      - API_GATEWAY_URL=http://api-gateway:3001
+      - API_GATEWAY_PUBLIC_URL=http://localhost:${API_GATEWAY_PORT:-4000}
+      - ODOO_PUBLIC_URL=http://localhost:8069
+      - ADMIN_IMPORT_TOKEN=${ADMIN_IMPORT_TOKEN}
+    ports:
+      - "${ADMIN_PORT:-3006}:3002"
+    depends_on:
+      node-dependencies:
+        condition: service_completed_successfully
+      api-gateway:
+        condition: service_started
+    networks:
+      - imana-network
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: imana-postgres
+    env_file: .env
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - imana-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: imana-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - imana-network
+
+  odoo:
+    image: odoo:19.0
+    container_name: imana-odoo
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8069:8069"
+    volumes:
+      - ./odoo/custom-addons:/mnt/extra-addons
+      - odoo-data:/var/lib/odoo
+    environment:
+      - HOST=postgres
+      - USER=${POSTGRES_USER}
+      - PASSWORD=${POSTGRES_PASSWORD}
+      - ODOO_USERNAME=${ODOO_USERNAME}
+      - ODOO_PASSWORD=${ODOO_PASSWORD}
+    networks:
+      - imana-network
+
+networks:
+  imana-network:
+    driver: bridge
+
+volumes:
+  node-root:
+  node-frontend:
+  node-api:
+  node-admin:
+  node-mobile:
+  node-shared-types:
+  node-ui-kit:
+  node-utils:
+  postgres-data:
+  redis-data:
+  odoo-data:

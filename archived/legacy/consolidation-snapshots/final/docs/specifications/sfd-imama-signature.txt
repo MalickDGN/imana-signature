@@ -1,0 +1,309 @@
+# Mission d'Audit Technique, d'Analyse d'Alignement et de Modernisation de la Plateforme E-commerce
+
+## Contexte
+
+En tant que **Lead Tech Full Stack** et **Architecte Logiciel**, tu interviens en collaboration avec une équipe pluridisciplinaire composée de :
+
+* Architecte Logiciel
+* Développeurs Front-End
+* Développeurs Back-End
+* UI/UX Designer
+* Directeur Artistique
+* Product Designer
+* Testeur QA
+* DevOps / Cloud Engineer
+* Expert SEO & Performance Web
+* Consultant Odoo ERP
+
+Le **Cahier des Charges Fonctionnel et Technique (CDC)** ci-joint définit l'ensemble des besoins métiers, fonctionnels, techniques et graphiques pour la réalisation d'une **plateforme de vente en ligne de parfums**, composée :
+
+* d'un **site vitrine haut de gamme** ;
+* d'une **boutique e-commerce** ;
+* d'un **espace client sécurisé** ;
+* d'une **interconnexion complète avec Odoo ERP** (catalogue, stock, commandes, clients, paiements, CRM, etc.).
+
+Par ailleurs, un **template de site web** est fourni comme base de travail.
+
+---
+
+# Mission
+
+L'objectif est de réaliser une **analyse complète de l'alignement entre le template existant et le Cahier des Charges**, afin d'identifier les écarts, définir les améliorations nécessaires et produire une feuille de route de mise en œuvre.
+
+L'analyse devra couvrir les aspects fonctionnels, techniques, ergonomiques, graphiques et architecturaux.
+
+---
+
+# Travaux attendus
+
+## 1. Audit technique complet du template existant
+
+Réaliser un audit approfondi du template en évaluant notamment :
+
+### Architecture Front-End
+
+* Structure HTML5
+* Organisation CSS / SCSS
+* Architecture JavaScript
+* Qualité du code
+* Réutilisabilité des composants
+* Maintenabilité
+* Modularité
+
+### Responsive Design
+
+* Mobile
+* Tablette
+* Desktop
+* Ultra Wide
+
+### UX/UI
+
+* Parcours utilisateur
+* Ergonomie
+* Navigation
+* Lisibilité
+* Accessibilité
+* Hiérarchie visuelle
+* Expérience d'achat
+
+### Performance Web
+
+* Core Web Vitals
+* Temps de chargement
+* Optimisation des images
+* Lazy Loading
+* Minification
+* Cache
+* Bundle JS/CSS
+
+### SEO
+
+* Structure des balises
+* Balises Meta
+* Données structurées
+* Sitemap
+* URLs
+* Maillage interne
+* Performance SEO
+
+### Accessibilité (WCAG)
+
+* Contraste
+* Navigation clavier
+* Lecteurs d'écran
+* Aria Labels
+* Formulaires accessibles
+
+---
+
+# 2. Analyse de couverture fonctionnelle
+
+Comparer le template avec le Cahier des Charges afin d'identifier :
+
+* les fonctionnalités déjà présentes ;
+* les fonctionnalités partiellement couvertes ;
+* les fonctionnalités absentes ;
+* les incohérences fonctionnelles ;
+* les limitations techniques.
+
+Produire une **Gap Analysis** détaillée sous forme de matrice indiquant :
+
+* Fonctionnalité
+* Présente / Partielle / Absente
+* Niveau de conformité
+* Impact métier
+* Priorité
+* Recommandation
+
+---
+
+# 3. Analyse de l'intégration avec Odoo
+
+Évaluer la compatibilité du template avec l'architecture cible Odoo.
+
+Identifier notamment :
+
+* synchronisation des produits ;
+* catégories ;
+* variantes ;
+* gestion du stock ;
+* panier ;
+* commandes ;
+* paiements ;
+* comptes clients ;
+* CRM ;
+* fidélité ;
+* promotions ;
+* coupons ;
+* wishlist ;
+* suivi des commandes.
+
+Proposer une architecture d'intégration robuste (API, REST, JSON-RPC, XML-RPC ou autre).
+
+---
+
+# 4. Proposition d'améliorations fonctionnelles
+
+Définir une liste priorisée des fonctionnalités à intégrer afin de répondre pleinement aux exigences du CDC.
+
+Par exemple :
+
+## Boutique
+
+* Catalogue dynamique
+* Recherche intelligente
+* Recherche instantanée
+* Filtres multicritères
+* Tri des produits
+* Wishlist
+* Comparateur
+* Produits récemment consultés
+* Produits associés
+* Promotions
+* Packs
+* Nouveautés
+
+## Panier
+
+* Mini-panier
+* Panier persistant
+* Codes promotionnels
+* Estimation des frais de livraison
+
+## Paiement
+
+* Paiement sécurisé
+* Mobile Money (Orange Money, Wave)
+* Carte bancaire
+* Stripe
+* PayPal
+* Paiement à la livraison (si applicable)
+
+## Compte client
+
+* Authentification
+* Tableau de bord
+* Historique des commandes
+* Factures
+* Retours
+* Adresses
+* Programme de fidélité
+* Liste d'envies
+
+## Relation client
+
+* Chat en ligne
+* Intégration WhatsApp Business
+* Chatbot intelligent
+* FAQ dynamique
+* Formulaire de contact
+* Newsletter
+
+## Marketing
+
+* Avis clients
+* Blog
+* Landing pages
+* Campagnes
+* SEO avancé
+* Tracking Analytics
+* Pixel Meta
+* Google Tag Manager
+
+---
+
+# 5. Direction Artistique
+
+Définir une direction artistique premium, élégante et contemporaine en cohérence avec :
+
+* la charte graphique ;
+* l'identité de marque ;
+* le positionnement haut de gamme des parfums.
+
+La proposition devra inclure :
+
+* palette de couleurs ;
+* typographies ;
+* système d'icônes ;
+* style photographique ;
+* illustrations ;
+* animations ;
+* micro-interactions ;
+* design system complet.
+
+---
+
+# 6. Refonte UX/UI
+
+Concevoir une expérience utilisateur moderne répondant aux meilleures pratiques actuelles.
+
+Produire notamment :
+
+* Architecture de l'information
+* User Flow
+* Customer Journey
+* Wireframes basse fidélité
+* Wireframes haute fidélité
+* Maquettes UI complètes
+* Prototype interactif (Figma)
+
+Les maquettes devront couvrir au minimum :
+
+* Accueil
+* À propos
+* Catalogue
+* Liste des catégories
+* Liste des produits
+* Fiche produit
+* Panier
+* Tunnel de commande
+* Connexion
+* Création de compte
+* Espace client
+* Wishlist
+* Blog
+* Contact
+
+---
+
+# 7. Priorisation des travaux
+
+Élaborer une roadmap de réalisation en classant les évolutions selon leur priorité :
+
+* Critique
+* Haute
+* Moyenne
+* Faible
+
+Une estimation devra être fournie pour chaque évolution :
+
+* Complexité
+* Charge estimée
+* Dépendances
+* Risques
+* Impact métier
+
+---
+
+# Livrables attendus
+
+À l'issue de cette mission, produire les livrables suivants :
+
+1. Rapport complet d'audit technique du template.
+2. Analyse d'alignement avec le Cahier des Charges.
+3. Matrice de Gap Analysis.
+4. Recommandations techniques et fonctionnelles priorisées.
+5. Proposition d'architecture d'intégration avec Odoo.
+6. Direction Artistique complète.
+7. Design System.
+8. Wireframes UX.
+9. Maquettes UI haute fidélité.
+10. Prototype interactif.
+11. Roadmap de mise en œuvre.
+12. Backlog Produit (Epics, Features, User Stories et Tâches).
+13. Planning de réalisation par lots (MVP, V1, V1.5 et V2).
+14. Estimation des charges et planning de développement.
+15. Plan de tests QA, recette et mise en production.
+
+L'ensemble des recommandations devra être argumenté, priorisé et aligné avec les objectifs métiers, les contraintes techniques, les bonnes pratiques du développement web moderne ainsi que les standards UX/UI, SEO, Accessibilité (WCAG) et Performance (Core Web Vitals).

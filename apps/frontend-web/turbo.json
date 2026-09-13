@@ -1,0 +1,15 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    "build": {
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/assets/**"
+      ],
+      "outputs": [
+        ".next/**",
+        "public/assets/**"
+      ]
+    }
+  }
+}

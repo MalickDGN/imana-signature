@@ -241,39 +241,6 @@ app.post("/api/newsletter", (request, response) => {
   return response.status(201).json({ message: "Inscription confirmée." });
 });
 
-app.get("/api/catalog", (request, response) => {
-  const category = String(request.query.category || "").trim();
-  const query = String(request.query.q || "").trim();
-  const conditions = ["catalog_products.status = 'active'"];
-  const params = [];
-  if (category) {
-    conditions.push("categories.slug = ?");
-    params.push(category);
-  }
-  if (query) {
-    conditions.push("(catalog_products.name LIKE ? OR catalog_products.description LIKE ?)");
-    params.push(`%${query}%`, `%${query}%`);
-  }
-  const items = database.prepare(`
-    SELECT catalog_products.*, categories.name AS category_name, categories.slug AS category_slug
-    FROM catalog_products
-    LEFT JOIN categories ON categories.id = catalog_products.category_id
-    WHERE ${conditions.join(" AND ")}
-    ORDER BY catalog_products.id DESC
-  `).all(...params).map((product) => ({
-    ...product,
-    variants: database.prepare(`
-      SELECT id, name, sku, attributes_json, price, cost_price, stock, status
-      FROM product_variants WHERE product_id = ? AND status = 'active' ORDER BY id
-    `).all(product.id).map((variant) => ({
-      ...variant,
-      attributes: JSON.parse(variant.attributes_json || "{}"),
-      attributes_json: undefined,
-    })),
-  }));
-  return response.json({ items });
-});
-
 app.post("/api/checkout", async (request, response) => {
   if (!stripe) {
     return response.status(503).json({
@@ -457,15 +424,8 @@ app.use("/assets", express.static(resolve(root, "assets"), {
     if (path.endsWith(".html")) response.setHeader("Cache-Control", "no-cache");
   },
 }));
-const sendHome = (_request, response) =>
-  response.sendFile(resolve(root, "index.html"));
-app.get(["/", "/index.html"], sendHome);
 app.get(["/admin", "/admin.html"], (_request, response) =>
   response.sendFile(resolve(root, "admin.html")));
-app.get("/index-preview.html", (_request, response) => response.redirect(301, "/index.html"));
-for (const page of ["la-maison.html", "catalogue.html", "magazine.html"]) {
-  app.get(`/${page}`, (_request, response) => response.sendFile(resolve(root, page)));
-}
 app.use((request, response) => response.status(404).json({ error: "Ressource introuvable." }));
 
 if (process.env.NODE_ENV !== "test") {

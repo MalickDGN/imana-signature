@@ -1,0 +1,41 @@
+{
+  "name": "imana-signature",
+  "private": true,
+  "scripts": {
+    "build": "pnpm -r --if-present run build",
+    "dev": "pnpm -r --parallel --if-present run dev",
+    "lint": "pnpm --filter @imana-signature/shared-types build && pnpm -r --if-present run lint",
+    "typecheck": "pnpm --filter @imana-signature/shared-types build && pnpm -r --if-present run typecheck",
+    "test": "pnpm -r --if-present run test",
+    "build:turbo": "turbo run build",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "dev:docker": "docker-compose -f docker-compose.dev.yml up -d",
+    "prod:docker": "docker-compose -f docker-compose.prod.yml up -d --build"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^21.2.0",
+    "@commitlint/config-conventional": "^21.2.0",
+    "turbo": "^2.10.1",
+    "prettier": "^3.9.4",
+    "typescript": "^5.5.4"
+  },
+  "packageManager": "pnpm@8.15.4",
+  "pnpm": {
+    "overrides": {
+      "glob": "^10.4.1",
+      "rimraf": "^5.0.7",
+      "@imana-signature/mobile-app>react": "18.2.0",
+      "@xmldom/xmldom": "^0.8.10",
+      "uuid": "^9.0.1",
+      "tar": "^6.2.1",
+      "@npmcli/move-file": "^3.0.0",
+      "osenv": "^0.1.5",
+      "git-raw-commits": "^5.0.1",
+      "sudo-prompt": "^9.2.1"
+    }
+  }
+}

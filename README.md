@@ -1,22 +1,53 @@
-# IMANA SIGNATURE
+# MAISON IMANA
 
-Boutique de parfumerie en HTML, CSS et JavaScript natif, avec backend Node.js,
-comptes clients, newsletter persistée et paiement Stripe Checkout.
+Monorepo pnpm/Turborepo de la plateforme Maison IMANA : storefront Next.js,
+portail d'administration, API Gateway NestJS, packages partagés et compatibilité
+FastAPI/Odoo.
 
 ## Prérequis
 
 - Node.js 22.5 ou supérieur
+- pnpm 8.15.4 ou supérieur
 - Un compte Stripe pour activer le paiement
 
 ## Installation
 
 ```bash
-npm install
+pnpm install --frozen-lockfile
 copy .env.example .env
-npm start
+pnpm --filter @imana-signature/frontend-web dev
 ```
 
-Ouvrir ensuite `http://127.0.0.1:8080`.
+Les applications sont disponibles sur leurs ports de développement respectifs.
+Le storefront historique Node reste lançable avec `npm start` depuis la racine.
+
+## Frontend conforme au site validé
+
+La référence client est https://imana-signature.web.app. Les quatre documents
+`index.html`, `la-maison.html`, `magazine.html`, `catalogue.html` à la racine et
+leurs ressources dans `assets/` constituent la référence visuelle historique.
+Le frontend Next.js transpose cette référence dans les composants React/TypeScript
+de `apps/frontend-web/src/components/storefront/`. Les routes `/`, `/about`,
+`/blog` et `/collections` servent ces composants ; les anciennes URL `.html`
+sont réécrites vers les mêmes pages React, en conservant les paramètres de recherche.
+
+`pnpm --filter @imana-signature/frontend-web dev` et `build` synchronisent les
+styles et médias de `assets/` vers `apps/frontend-web/public/`, sans les scripts
+JavaScript historiques ni les documents HTML. Pour une copie manuelle :
+`pnpm --filter @imana-signature/frontend-web sync:storefront`.
+Modifier les pages et interactions dans `apps/frontend-web/src/`. Pour les médias
+et styles partagés, modifier `assets/` à la racine, puis synchroniser ; ne pas
+retoucher leurs copies dans `public/`. Les fichiers HTML racine restent la
+référence historique et ne pilotent plus le rendu Next.js.
+
+`pnpm run test:frontend` contrôle le frontend Next.js sur le port 3100 : routes
+React et URL historiques, hydratation, styles et médias, navigation, diaporama,
+filtres, persistance du panier et états vide/erreur du catalogue sur bureau et mobile.
+Le catalogue, la session, les articles et la collecte analytics sont simulés dans cette suite ;
+elle ne valide pas la connexion Odoo ni les paiements réels. Le catalogue de
+production est chargé depuis `/api/storefront/products`.
+
+Sous PowerShell avec les scripts désactivés, utiliser `pnpm.cmd` au lieu de `pnpm`.
 
 Le serveur HTTP Node est obligatoire : un serveur statique Python ne fournit pas
 les API de compte, newsletter et paiement.
@@ -74,20 +105,24 @@ une famille photographique cohérente.
 Pour les régénérer depuis les sources :
 
 ```bash
-npm run images
+pnpm run images
 ```
 
 ## Tests
 
 ```bash
-npm test
-npm run test:e2e
-npm run test:all
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm build
+pnpm run test:e2e
 ```
 
-Les tests E2E couvrent Chromium en bureau et mobile : catalogue, panier,
-création de compte, restauration de session, déconnexion, newsletter et
-comportement du paiement non configuré.
+Les tests E2E (`tests/e2e/storefront-alignment.spec.js`) couvrent Chromium en
+bureau et mobile sur le frontend Next.js : routes React et URL historiques,
+hydratation, styles et médias, navigation, diaporama, filtres, persistance du
+panier et états vide/erreur du catalogue. Le comportement du paiement non
+configuré est couvert par `pnpm test` (`tests/unit/api.test.js`).
 
 Installer Chromium pour Playwright sur une nouvelle machine avec :
 
@@ -96,6 +131,19 @@ npx playwright install chromium
 ```
 
 ## Structure
+
+Le monorepo racine est la source de vérité unique :
+
+- `apps/frontend-web/` : storefront Next.js
+- `apps/admin-portal/` : administration Next.js
+- `apps/api-gateway/` : API NestJS et intégration Odoo métier
+- `packages/` : types, UI et utilitaires partagés
+- `services/odoo-compat/` : API FastAPI/Odoo conservée pour compatibilité avec les endpoints historiques
+- `services/` : services métier indépendants lorsqu'ils disposent d'une implémentation validée
+- `infrastructure/`, `odoo/`, `docs/` : déploiement, addons et documentation
+- `tests/` : tests JavaScript storefront/E2E et tests Python de compatibilité
+
+Les services sans implémentation ou tests validés ne sont pas déclarés comme workspaces exécutables.
 
 - `index.html` : accueil éditorial et entrées vers la boutique
 - `catalogue.html` : catalogue filtrable et parcours d’achat

@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex,nofollow">
+    <title>Administration — IMANA Signature</title>
+    <link rel="stylesheet" href="assets/css/admin.css">
+  </head>
+  <body>
+    <div class="admin-login" id="adminLogin">
+      <section class="login-card" aria-labelledby="loginTitle">
+        <img src="assets/images/branding/imana-logo-vertical-gold.svg" alt="IMANA Signature">
+        <p class="eyebrow">Portail privé</p>
+        <h1 id="loginTitle">Administration</h1>
+        <p class="login-copy">Pilotez la boutique, les opérations et la relation client.</p>
+        <form id="adminLoginForm">
+          <label>Adresse e-mail<input name="email" type="email" autocomplete="username" required></label>
+          <label>Mot de passe<input name="password" type="password" autocomplete="current-password" minlength="10" required></label>
+          <button class="primary-button" type="submit">Se connecter</button>
+          <p class="form-error" id="loginError" role="alert"></p>
+        </form>
+        <a href="/">Retour à la boutique</a>
+      </section>
+    </div>
+
+    <div class="admin-shell" id="adminShell" hidden>
+      <aside class="sidebar" id="adminSidebar">
+        <a class="admin-brand" href="/admin" aria-label="Accueil administration">
+          <img src="assets/images/branding/imana-logo-vertical-gold.svg" alt="">
+          <span>IMANA <small>Administration</small></span>
+        </a>
+        <nav aria-label="Navigation administration">
+          <button class="nav-item active" data-view="dashboard">Vue d’ensemble</button>
+          <p class="nav-group">Commerce</p>
+          <button class="nav-item" data-view="orders">Commandes</button>
+          <button class="nav-item" data-view="invoices">Facturation</button>
+          <button class="nav-item" data-view="transactions">Paiements</button>
+          <button class="nav-item" data-view="deliveries">Livraisons</button>
+          <p class="nav-group">Catalogue</p>
+          <button class="nav-item" data-view="products">Produits</button>
+          <button class="nav-item" data-view="variants">Variantes</button>
+          <button class="nav-item" data-view="categories">Catégories</button>
+          <button class="nav-item" data-view="stock">Stock réel</button>
+          <p class="nav-group">Audience</p>
+          <button class="nav-item" data-view="users">Utilisateurs</button>
+          <button class="nav-item" data-view="members">Membres</button>
+          <button class="nav-item" data-view="campaigns">Campagnes</button>
+          <p class="nav-group">Contenus</p>
+          <button class="nav-item" data-view="articles">Articles</button>
+          <button class="nav-item" data-view="faqs">FAQ</button>
+          <button class="nav-item" data-view="social-publications">Réseaux sociaux</button>
+          <button class="nav-item" data-view="seo-analysis">Analyse SEO</button>
+          <p class="nav-group">Configuration</p>
+          <button class="nav-item" data-view="payment-methods">Moyens de paiement</button>
+          <button class="nav-item" data-view="delivery-zones">Zones de livraison</button>
+          <button class="nav-item admin-only" data-view="audit-logs">Journal d’audit</button>
+        </nav>
+      </aside>
+
+      <main class="admin-main">
+        <header class="topbar">
+          <button class="menu-toggle" id="menuToggle" type="button" aria-label="Ouvrir la navigation" aria-expanded="false">☰</button>
+          <div>
+            <p class="eyebrow" id="viewEyebrow">Pilotage</p>
+            <h1 id="viewTitle">Vue d’ensemble</h1>
+          </div>
+          <div class="account-menu">
+            <span class="status-dot" aria-hidden="true"></span>
+            <div><strong id="adminName"></strong><small id="adminRole"></small></div>
+            <button class="icon-button" id="refreshView" type="button" aria-label="Actualiser">↻</button>
+            <button class="secondary-button" id="adminLogout" type="button">Déconnexion</button>
+          </div>
+        </header>
+
+        <div class="content" id="adminContent" aria-live="polite"></div>
+      </main>
+    </div>
+
+    <div class="modal-backdrop" id="resourceModal" hidden>
+      <section class="resource-modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" tabindex="-1">
+        <header><div><p class="eyebrow">Édition</p><h2 id="modalTitle"></h2></div><button type="button" data-close-modal aria-label="Fermer">×</button></header>
+        <form id="resourceForm"></form>
+      </section>
+    </div>
+
+    <div class="toast" id="adminToast" role="status"></div>
+    <script type="module" src="assets/js/admin-portal.js"></script>
+  </body>
+</html>

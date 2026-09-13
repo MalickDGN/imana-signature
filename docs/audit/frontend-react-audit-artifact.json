@@ -1,0 +1,139 @@
+{
+  "surface": "report",
+  "manifest": {
+    "version": 1,
+    "surface": "report",
+    "title": "Audit de la migration React du frontend Maison IMANA",
+    "description": "Conformité à la maquette validée, architecture React/TypeScript, parcours e-commerce et intégration Odoo.",
+    "generatedAt": "2026-09-09T12:30:00Z",
+    "sources": [
+      { "id": "baseline", "label": "Pages statiques validées", "path": "index.html" },
+      { "id": "frontend", "label": "Frontend React/TypeScript", "path": "apps/frontend-web/src" },
+      { "id": "gateway", "label": "Contrats API et intégration Odoo", "path": "apps/api-gateway/src" },
+      { "id": "verification", "label": "Vérifications automatisées", "path": "tests/e2e/storefront-alignment.spec.js" }
+    ],
+    "tables": [],
+    "charts": [
+      {
+        "id": "open_findings_by_severity",
+        "title": "Constats ouverts par sévérité",
+        "subtitle": "Douze constats ouverts au 9 septembre 2026; les quatre corrections appliquées sont exclues.",
+        "showDescription": true,
+        "type": "bar",
+        "intent": "comparison",
+        "question": "Où se concentre le risque résiduel de l’audit ?",
+        "rationale": "Une barre horizontale permet de comparer quatre catégories ordonnées avec des libellés longs.",
+        "dataset": "severity_counts",
+        "source": {
+          "label": "Agrégation du registre d’audit",
+          "query": {
+            "engine": "SQLite",
+            "language": "sql",
+            "executed_at": "2026-09-09T12:30:00Z",
+            "description": "Comptage des constats encore ouverts par sévérité.",
+            "sql": "SELECT severity, count FROM severity_counts ORDER BY count DESC;",
+            "tables_used": ["severity_counts"],
+            "filters": ["status = OUVERT"],
+            "metric_definitions": ["count = nombre de constats du registre dont le statut est OUVERT"]
+          }
+        },
+        "layout": "full",
+        "maxRows": 4,
+        "encodings": {
+          "x": { "field": "severity", "type": "ordinal", "label": "Sévérité" },
+          "y": { "field": "count", "type": "quantitative", "label": "Constats ouverts", "format": "number" },
+          "tooltip": [
+            { "field": "severity", "type": "text", "label": "Sévérité" },
+            { "field": "count", "type": "quantitative", "label": "Constats", "format": "number" }
+          ]
+        },
+        "surface": { "legend": false, "valueLabels": true }
+      }
+    ],
+    "blocks": [
+      { "id": "title", "type": "markdown", "layout": "full", "body": "# Audit de la migration React du frontend Maison IMANA" },
+      { "id": "summary", "type": "markdown", "layout": "full", "body": "## Résultat technique\n\nLa migration des quatre pages publiques conserve largement la structure, l’identité visuelle, le responsive et les interactions validées. Les 26 scénarios Playwright desktop/mobile passent et les cinq tests Vitest passent. Le frontend ne peut toutefois pas être déclaré prêt au go-live : le contrat catalogue ne fournit pas les attributs nécessaires aux filtres affichés, aucune sélection de variante n’existe, le catalogue est tronqué à 100 produits, le flux Mobile Money ne lance aucun prestataire et l’idempotence de création de commande n’est pas démontrée.\n\nQuatre régressions certaines ont été corrigées pendant l’audit : distinction entre paiement en attente et commande confirmée, suivi de conversion limité aux commandes confirmées, liens du méga-menu rendus navigables et suppression d’une configuration d’images de démonstration. Un libellé Mastercard corrompu a également été réparé.\n\n**Verdict : conformité visuelle substantielle, maturité React correcte mais hétérogène, parcours transactionnel et synchronisation Odoo encore partiels. Go-live refusé tant que les constats CRITICAL restent ouverts.**" },
+      { "id": "evidence_intro", "type": "markdown", "layout": "full", "body": "## Les quatre routes sont migrées, mais la parité métier reste partielle\n\nLes routes `/`, `/about`, `/collections` et `/blog` rendent des composants React et les anciennes URL `.html` sont réécrites vers ces routes. Header, footer, diaporama, diagnostic, modales, recherche, panier et responsive reprennent le langage visuel historique. La dynamisation introduit cependant un écart entre les contrôles visibles et les données réellement disponibles : le modèle enrichi du storefront attend des facettes absentes du contrat API." },
+      { "id": "compliance_block", "type": "markdown", "layout": "full", "body": "- **Accueil — PARTIEL :** `index.html` devient `/`; campagnes et compteurs restent statiques et doivent venir du SI/CMS.\n- **Maison — OUI :** `la-maison.html` devient `/about`; ajouter une baseline visuelle distante.\n- **Catalogue — NON :** `catalogue.html` devient `/collections`, mais les facettes manquent et la liste s’arrête à 100 produits.\n- **Magazine — PARTIEL :** `magazine.html` devient `/blog`; le fallback est silencieux et le HTML CMS doit être assaini.\n- **Header/Footer — OUI APRÈS CORRECTION :** destinations principales conservées et ancres cassées réparées.\n- **Responsive — OUI SUR DEUX VUES :** desktop et Pixel 5 passent; ajouter deux tailles tablette.\n- **Panier — OUI :** Zustand, panneau et page dédiée; rafraîchir prix et stock au checkout.\n- **Checkout — PARTIEL :** trois étapes et création Odoo, mais paiement et idempotence restent incomplets.\n- **SEO — PARTIEL :** metadata, sitemap et JSON-LD présents; canonical, Twitter et sitemap dynamique restent à ajouter.\n- **Accessibilité — PARTIEL :** focus, labels et reduced motion présents; ajouter axe et recette WCAG.\n- **Odoo headless — PARTIEL :** la chaîne Frontend → Gateway → Odoo est correcte; le contrat doit être enrichi et testé en live." },
+      { "id": "architecture", "type": "markdown", "layout": "full", "body": "## L’architecture protège Odoo, mais deux frontends coexistent dans le même code\n\nLe navigateur appelle des routes Maison IMANA et ne contient aucun secret Odoo ou paiement. L’API Gateway traduit les modèles Odoo, revérifie le stock et ignore les prix transmis par le navigateur lors de la création des lignes. Le frontend utilise TypeScript strict, des stores Zustand persistés et des états loading/error/empty/retry pour le catalogue.\n\nLa maintenabilité souffre toutefois de deux familles de composants (`components/*` et `components/storefront/*`) pour Header, Footer et cartes produit, ainsi que de gros composants générés sur une seule ligne. Le contrat `Product` partagé est trop pauvre pour le catalogue enrichi, ce qui déplace la logique de normalisation et les suppositions métier dans le frontend." },
+      { "id": "commerce", "type": "markdown", "layout": "full", "body": "## Le tunnel d’achat crée une commande Odoo, mais le paiement en ligne n’est pas complet\n\nLe parcours panier → adresse → livraison → paiement est présent et testé. Le backend valide les DTO, recherche ou crée le partenaire, revérifie le stock, ajoute une ligne de livraison configurée côté serveur puis crée la vente Odoo. Le paiement à la livraison confirme la vente.\n\nPour Mobile Money, le backend crée seulement une commande `pending_payment`; aucun checkout Wave/Orange Money, URL de redirection, callback vérifié ou webhook de confirmation n’est visible dans ce flux. Le frontend désactive le bouton pendant une requête unique, mais aucun identifiant d’idempotence n’est transmis ou contrôlé côté serveur. Ces deux points empêchent la validation transactionnelle demandée." },
+      { "id": "security_seo", "type": "markdown", "layout": "full", "body": "## Sécurité et SEO : base saine, deux risques élevés à fermer\n\nLes appels sensibles restent côté serveur et la session utilise des cookies via les services backend. Aucun credential n’a été trouvé dans `apps/frontend-web`. En revanche, le corps HTML des articles CMS est injecté avec `dangerouslySetInnerHTML` sans preuve de sanitation au point de rendu. Une compromission ou une mauvaise validation du CMS pourrait produire une XSS stockée.\n\nLe layout fournit title, description, Open Graph, robots et sitemap. Les produits ont un JSON-LD Product et Breadcrumb. Il manque des canonical explicites, les Twitter cards, les produits/articles dynamiques dans le sitemap, des URL absolues robustes dans les données structurées et une stratégie de cache cohérente avec la fraîcheur des prix et stocks." },
+      { "id": "findings_intro", "type": "markdown", "layout": "full", "body": "## Les blocages prioritaires concernent les contrats métier, le paiement et l’échelle\n\nLe registre ci-dessous sépare les corrections appliquées des écarts qui nécessitent un chantier coordonné frontend/API/Odoo. Les rangs servent uniquement à conserver l’ordre de priorité dans cette table d’audit." },
+      { "id": "severity_chart", "type": "chart", "chartId": "open_findings_by_severity", "layout": "full" },
+      { "id": "findings_block", "type": "markdown", "layout": "full", "body": "### CRITICAL — ouverts\n\n- **F-01 · Catalogue/Odoo :** facettes et variantes absentes; étendre contrat et mapping Odoo.\n- **F-02 · Paiement :** Mobile Money sans prestataire; créer session et webhook signé.\n- **F-03 · Commande :** aucune idempotence; ajouter clé stable et rejeu.\n\n### HIGH — ouverts\n\n- **F-04 :** catalogue limité à 100; ajouter pagination/cursor.\n- **F-05 :** HTML CMS brut, XSS possible; appliquer une sanitation allowlist.\n- **F-06 :** prix/stock cachés 300 s; séparer fraîcheur et invalidation.\n- **F-07 :** données métier codées en dur; les servir via SI/CMS/backend.\n\n### MEDIUM — ouverts\n\n- **F-08 :** Header, Footer et cartes doublés; fusionner par domaine.\n- **F-09 :** composants très denses; découper et formater.\n- **F-10 :** SEO dynamique incomplet; compléter la metadata par route.\n- **F-11 :** recette pixel/WCAG/tablette/live absente; étendre les tests.\n- **F-12 :** panne CMS silencieuse; rendre l’état dégradé observable.\n\n### Corrigés pendant l’audit\n\n- **F-13 LOW :** domaine Fake Store supprimé.\n- **F-14 HIGH :** paiement en attente distingué du succès et exclu des conversions.\n- **F-15 MEDIUM :** destinations du méga-menu réparées.\n- **F-16 LOW :** libellé Mastercard réparé." },
+      { "id": "method", "type": "markdown", "layout": "full", "body": "## Périmètre, méthode et robustesse\n\nL’audit couvre `apps/frontend-web`, les quatre pages HTML racine, les CSS/JS historiques, les types partagés et les services produits/commandes/Odoo de l’API Gateway. La comparaison porte sur la structure, les contenus, les interactions, les états, les contrats, la sécurité, le SEO et le parcours e-commerce.\n\nVérifications exécutées : 26 tests Playwright sur Chromium desktop et Pixel 5, cinq tests Vitest, compilation TypeScript stricte et build Next.js de production. Les tests Playwright simulent le catalogue, la session, les articles et analytics; ils prouvent le comportement du frontend, pas la connexion Odoo live ni un paiement réel." },
+      { "id": "limitations", "type": "markdown", "layout": "full", "body": "## Limites et éléments non démontrés\n\nLe site public `https://imana-signature.web.app/` n’était accessible ni au lecteur web ni à un navigateur interactif dans cet environnement. La comparaison visuelle repose donc sur les quatre fichiers locaux désignés comme baseline et sur les captures Playwright du frontend local. Aucune comparaison pixel à pixel distante, mesure Lighthouse/Core Web Vitals, audit WCAG outillé, test tablette dédié, charge à plusieurs milliers de produits, paiement réel ou recette Odoo v19 live n’a été réalisé.\n\nLe statut du snapshot est `partial` pour rendre ces limites explicites. Elles doivent être levées sur staging avec les mêmes données et médias que la production." },
+      { "id": "cleanup_intro", "type": "markdown", "layout": "full", "body": "## Le nettoyage doit consolider une seule architecture active\n\nLes sources historiques restent utiles comme référence de recette, mais elles ne doivent plus alimenter le runtime. Les composants génériques non utilisés doivent être fusionnés avec le storefront ou retirés après vérification des routes produit, panier, wishlist et checkout." },
+      { "id": "cleanup_block", "type": "markdown", "layout": "full", "body": "- **KEEP :** `src/app`, `components/storefront` et les stores cart/wishlist; stabiliser et versionner le stockage.\n- **REFACTOR :** catalogue/modèle et paiement/page finale; créer des features avec contrats et machines d’états explicites.\n- **MERGE :** les deux Header, les deux Footer et les deux cartes produit; conserver une implémentation partagée.\n- **ARCHIVE :** HTML historiques et `assets/js` après validation visuelle finale du client.\n- **DELETE_CANDIDATE :** script de migration ponctuel et médias non référencés, après inventaire d’usage et contrôle CI." },
+      { "id": "next_steps", "type": "markdown", "layout": "full", "body": "## Plan de remise à niveau recommandé\n\n1. Étendre le contrat produit/API Odoo avec variantes et facettes, puis ajouter pagination/cursor et filtres serveur.\n2. Implémenter un véritable flux Wave/Orange Money avec initiation serveur, callback signé, webhook idempotent et page de statut consultable.\n3. Ajouter une clé d’idempotence aux commandes et un état de reprise sûr après timeout.\n4. Sanitize le HTML CMS côté ingestion ou avec une allowlist éprouvée avant rendu.\n5. Rendre promotions, compteurs, marques et modes de livraison pilotables par le SI ou le CMS.\n6. Ajouter une recette staging Odoo, des snapshots visuels approuvés, axe-core, Lighthouse et un jeu de données supérieur à 100 produits.\n7. Consolider les composants doublons et découper les fichiers storefront les plus denses par domaine.\n\nLe go-live peut être reconsidéré lorsque les constats F-01 à F-05 sont fermés et qu’un parcours réel produit avec variante → paiement → webhook → commande Odoo confirmée passe sur staging." },
+      { "id": "questions", "type": "markdown", "layout": "full", "body": "## Questions à trancher\n\n- Quelles facettes et variantes Odoo sont contractuellement disponibles pour chaque univers ?\n- Quel prestataire et quel protocole de webhook sont retenus pour Wave et Orange Money ?\n- Les promotions et contenus magazine relèvent-ils d’Odoo, d’un CMS ou d’une gouvernance éditoriale distincte ?\n- Quelle tolérance de fraîcheur est acceptée pour prix, stock, catalogue et catégories ?\n- Les pages historiques doivent-elles être déplacées dans `archived/` après validation pixel à pixel sur staging ?" }
+    ]
+  },
+  "snapshot": {
+    "version": 1,
+    "generatedAt": "2026-09-09T12:30:00Z",
+    "status": "partial",
+    "accessIssues": [
+      { "id": "live-baseline", "scope": "visual-comparison", "sourceId": "baseline", "message": "Le site Firebase public n’a pas pu être ouvert dans l’environnement d’audit; la baseline locale a été utilisée." },
+      { "id": "odoo-live", "scope": "integration", "sourceId": "gateway", "message": "Aucun credential ni environnement Odoo v19 live n’était disponible pour une recette réelle." }
+    ],
+    "datasets": {
+      "severity_counts": [
+        { "severity": "CRITICAL", "count": 3 },
+        { "severity": "HIGH", "count": 4 },
+        { "severity": "MEDIUM", "count": 5 },
+        { "severity": "LOW", "count": 0 }
+      ],
+      "compliance": [
+        { "element": "Accueil", "static": "index.html, 5 slides et sections éditoriales", "react": "Route /, HomeSections, Hero, Diagnostic", "conformity": "PARTIEL", "gap": "Structure fidèle; produits dynamiques mais campagnes et compteurs restent statiques", "action": "Brancher campagnes et compteurs au SI/CMS" },
+        { "element": "La Maison", "static": "la-maison.html", "react": "Route /about, MaisonSections", "conformity": "OUI", "gap": "Sections et contenus principaux conservés", "action": "Ajouter snapshots visuels approuvés" },
+        { "element": "Catalogue", "static": "catalogue.html et filtres riches", "react": "Route /collections, CatalogLayout", "conformity": "NON", "gap": "Facettes visibles absentes du contrat API; maximum 100 produits", "action": "Étendre DTO et API, filtrer/paginer côté serveur" },
+        { "element": "Magazine", "static": "magazine.html", "react": "Route /blog et articles CMS", "conformity": "PARTIEL", "gap": "Fallback statique silencieux; HTML CMS non assaini", "action": "État d’erreur éditorial et sanitation allowlist" },
+        { "element": "Header", "static": "Navigation et méga-menu", "react": "Composant storefront/Header", "conformity": "OUI APRÈS CORRECTION", "gap": "Ancres relatives du méga-menu étaient cassées hors accueil", "action": "Correction appliquée; ajouter test de chaque lien" },
+        { "element": "Footer", "static": "Coordonnées, réseaux, WhatsApp", "react": "Composant storefront/Footer", "conformity": "OUI", "gap": "Contenu et destinations principales conservés", "action": "Conserver" },
+        { "element": "Responsive", "static": "Breakpoints client", "react": "CSS historique + composants hydratés", "conformity": "OUI SUR 2 VUES", "gap": "Desktop et Pixel 5 testés; tablette non dédiée", "action": "Ajouter 768 px et 1024 px" },
+        { "element": "Panier", "static": "Panneau latéral", "react": "Zustand + panneau et page /cart", "conformity": "OUI", "gap": "Prix/stock du panier peuvent vieillir jusqu’à la commande", "action": "Rafraîchir avant checkout et expliquer les changements" },
+        { "element": "Checkout", "static": "Flux simulé", "react": "Adresse, livraison, paiement, création Odoo", "conformity": "PARTIEL", "gap": "Mobile Money non initié; idempotence absente", "action": "Implémenter provider, webhook et clé idempotente" },
+        { "element": "SEO", "static": "Meta et canonical", "react": "Metadata, robots, sitemap, JSON-LD", "conformity": "PARTIEL", "gap": "Canonical/Twitter et sitemap dynamique incomplets", "action": "Compléter metadata et URLs produits/articles" },
+        { "element": "Accessibilité", "static": "ARIA partiel", "react": "Focus trap, labels, rôles, reduced motion", "conformity": "PARTIEL", "gap": "Bon socle; aucun audit axe/WCAG complet", "action": "Automatiser axe et effectuer une recette clavier/lecteur d’écran" },
+        { "element": "Odoo headless", "static": "Données locales", "react": "Frontend → Gateway → Odoo", "conformity": "PARTIEL", "gap": "Architecture correcte; schéma produit insuffisant et live non testé", "action": "Valider contrat enrichi et recette Odoo v19" }
+      ],
+      "findings": [
+        { "rank": 1, "id": "F-01", "severity": "CRITICAL", "domain": "E-commerce / Odoo", "file": "shared-types/product.ts; products.service.ts; storefront/model.ts", "finding": "Les facettes et variantes attendues par l’UI ne sont pas fournies par l’API.", "impact": "Filtres vides ou faux; aucune sélection de variante.", "correction": "Étendre le contrat, mapper Odoo et tester les variantes.", "status": "OUVERT" },
+        { "rank": 2, "id": "F-02", "severity": "CRITICAL", "domain": "Paiement", "file": "PaymentForm.tsx; orders.service.ts", "finding": "Mobile Money crée seulement une commande en attente sans initiation prestataire.", "impact": "Le client ne peut pas payer réellement.", "correction": "Créer session provider, callback signé et webhook de confirmation.", "status": "OUVERT" },
+        { "rank": 3, "id": "F-03", "severity": "CRITICAL", "domain": "Commande", "file": "PaymentForm.tsx; orders.service.ts", "finding": "Aucune clé d’idempotence n’est transmise ou contrôlée.", "impact": "Timeout ou double requête peut créer plusieurs commandes.", "correction": "Clé client stable, stockage serveur et réponse rejouable.", "status": "OUVERT" },
+        { "rank": 4, "id": "F-04", "severity": "HIGH", "domain": "Performance / catalogue", "file": "api/storefront/products/route.ts; list-products-query.dto.ts", "finding": "Le storefront demande limit=100 sans pagination.", "impact": "Produits invisibles au-delà de 100; échelle non tenue.", "correction": "Pagination/cursor serveur et chargement progressif.", "status": "OUVERT" },
+        { "rank": 5, "id": "F-05", "severity": "HIGH", "domain": "Sécurité", "file": "app/blog/[slug]/page.tsx", "finding": "Le HTML CMS est injecté sans sanitation démontrée.", "impact": "Risque de XSS stockée.", "correction": "Sanitize côté ingestion/rendu avec allowlist testée.", "status": "OUVERT" },
+        { "rank": 6, "id": "F-06", "severity": "HIGH", "domain": "Prix / stock", "file": "lib/api/products.ts", "finding": "Fiches et listes serveur utilisent revalidate=300 pour prix et stock.", "impact": "Affichage potentiellement obsolète pendant cinq minutes.", "correction": "Séparer cache catalogue, prix et disponibilité; invalider sur événements.", "status": "OUVERT" },
+        { "rank": 7, "id": "F-07", "severity": "HIGH", "domain": "Données métier", "file": "storefront/editorial.ts; ShippingMethodForm.tsx", "finding": "Campagnes, compteurs, marques et tarifs de livraison sont codés en dur.", "impact": "Promesses et montants affichés peuvent diverger du SI.", "correction": "Servir ces données via Odoo/CMS/config backend.", "status": "OUVERT" },
+        { "rank": 8, "id": "F-08", "severity": "MEDIUM", "domain": "React / architecture", "file": "components/* et components/storefront/*", "finding": "Deux familles Header/Footer/cartes coexistent.", "impact": "Dérive visuelle et maintenance double.", "correction": "Fusionner autour d’une architecture par domaine.", "status": "OUVERT" },
+        { "rank": 9, "id": "F-09", "severity": "MEDIUM", "domain": "Maintenabilité", "file": "CatalogLayout.tsx; Hero.tsx; MaisonSections.tsx", "finding": "Plusieurs composants sont denses et largement écrits sur une ligne.", "impact": "Revue, évolution et résolution de conflits difficiles.", "correction": "Découper par section et reformater avec Prettier.", "status": "OUVERT" },
+        { "rank": 10, "id": "F-10", "severity": "MEDIUM", "domain": "SEO", "file": "layout.tsx; sitemap.ts; pages dynamiques", "finding": "Canonical, Twitter cards et sitemap produits/articles sont incomplets.", "impact": "Indexation et partage social sous-optimaux.", "correction": "Metadata par route et sitemap dynamique absolu.", "status": "OUVERT" },
+        { "rank": 11, "id": "F-11", "severity": "MEDIUM", "domain": "Tests", "file": "tests/e2e/storefront-alignment.spec.js", "finding": "Pas de baseline pixel approuvée, axe, tablette ni parcours Odoo/paiement réel.", "impact": "Régressions visuelles et transactionnelles possibles.", "correction": "Ajouter snapshots, axe, vues tablette et staging connecté.", "status": "OUVERT" },
+        { "rank": 12, "id": "F-12", "severity": "MEDIUM", "domain": "UX états", "file": "Editorial.tsx; pages serveur", "finding": "Le magazine masque les erreurs API par un fallback statique silencieux.", "impact": "Panne CMS invisible et contenu potentiellement périmé.", "correction": "Afficher un état dégradé explicite et observable.", "status": "OUVERT" },
+        { "rank": 13, "id": "F-13", "severity": "LOW", "domain": "Configuration", "file": "next.config.js", "finding": "Un domaine fakestoreapi.com de démonstration restait autorisé.", "impact": "Dette et confusion sur les sources d’images.", "correction": "Configuration supprimée.", "status": "CORRIGÉ" },
+        { "rank": 14, "id": "F-14", "severity": "HIGH", "domain": "Paiement / analytics", "file": "PaymentForm.tsx; order/success/page.tsx", "finding": "Une commande pending_payment utilisait le même succès et déclenchait une conversion.", "impact": "Confirmation trompeuse et conversions surestimées.", "correction": "État transmis, message conditionnel et tracking confirmé seulement.", "status": "CORRIGÉ" },
+        { "rank": 15, "id": "F-15", "severity": "MEDIUM", "domain": "Navigation", "file": "storefront/Header.tsx", "finding": "Les liens marques/accessoires/diagnostic du méga-menu visaient des ancres absentes hors accueil.", "impact": "Navigation sans résultat.", "correction": "Liens remplacés par des routes et recherches fonctionnelles.", "status": "CORRIGÉ" },
+        { "rank": 16, "id": "F-16", "severity": "LOW", "domain": "UI", "file": "storefront/HomeSections.tsx", "finding": "Le libellé Mastercard contenait des caractères corrompus.", "impact": "Défaut graphique visible.", "correction": "Libellé MC lisible et aria-label conservé.", "status": "CORRIGÉ" }
+      ],
+      "cleanup": [
+        { "decision": "KEEP", "target": "src/app et components/storefront", "reason": "Routes publiques et langage visuel actif.", "next": "Stabiliser avec tests visuels." },
+        { "decision": "KEEP", "target": "lib/store/cart.ts et wishlist.ts", "reason": "État client typé et persistant.", "next": "Ajouter migration/version du stockage et refresh prix." },
+        { "decision": "REFACTOR", "target": "CatalogLayout.tsx et storefront/model.ts", "reason": "UI riche couplée à des attributs absents du backend.", "next": "Créer feature catalog avec contrat partagé." },
+        { "decision": "REFACTOR", "target": "PaymentForm et page success", "reason": "Le statut doit suivre le cycle de paiement réel.", "next": "Machine d’états paiement/commande." },
+        { "decision": "MERGE", "target": "components/Header.tsx et storefront/Header.tsx", "reason": "Deux implémentations concurrentes.", "next": "Conserver une API de navigation unique." },
+        { "decision": "MERGE", "target": "components/Footer.tsx et storefront/Footer.tsx", "reason": "Deux footers divergents.", "next": "Retirer celui qui n’est plus référencé." },
+        { "decision": "MERGE", "target": "ProductCard.tsx et StorefrontProductCard", "reason": "Cartes produit distinctes selon les routes.", "next": "Un composant partagé avec variantes de présentation." },
+        { "decision": "ARCHIVE", "target": "index.html, la-maison.html, catalogue.html, magazine.html et assets/js", "reason": "Baseline utile, hors runtime Next.js.", "next": "Déplacer après validation visuelle client finale." },
+        { "decision": "DELETE_CANDIDATE", "target": "scripts/migrate-approved-markup.cjs", "reason": "Script de migration ponctuelle après stabilisation.", "next": "Vérifier CI et documentation avant suppression." },
+        { "decision": "DELETE_CANDIDATE", "target": "assets/img hérités non référencés", "reason": "Poids public et confusion de provenance.", "next": "Produire un inventaire d’usage avant suppression." }
+      ]
+    }
+  },
+  "sources": [
+    { "id": "baseline", "label": "Pages statiques validées", "path": "index.html" },
+    { "id": "frontend", "label": "Frontend React/TypeScript", "path": "apps/frontend-web/src" },
+    { "id": "gateway", "label": "Contrats API et intégration Odoo", "path": "apps/api-gateway/src" },
+    { "id": "verification", "label": "Vérifications automatisées", "path": "tests/e2e/storefront-alignment.spec.js" }
+  ]
+}
