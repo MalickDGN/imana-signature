@@ -9,6 +9,7 @@ import { createHmac } from 'node:crypto';
 import { OdooService } from '../integrations/odoo/odoo.service';
 import { PaymentMethodsService } from '../payment-methods/payment-methods.service';
 import { DeliveryZonesService } from '../delivery-zones/delivery-zones.service';
+import { AuditLogService } from '../audit-log/audit-log.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { OrdersService } from './orders.service';
 
@@ -47,10 +48,14 @@ describe('OrdersService', () => {
   const deliveryZones = {
     findActiveById: vi.fn(),
   };
+  const auditLog = {
+    record: vi.fn(),
+  };
   let service: OrdersService;
 
   beforeEach(() => {
     vi.spyOn(Logger.prototype, 'log').mockImplementation(() => undefined);
+    auditLog.record.mockClear();
     odoo.findProducts.mockResolvedValue([
       { id: 42, qty_available: 10, sale_ok: true },
     ]);
@@ -83,6 +88,7 @@ describe('OrdersService', () => {
       }),
       paymentMethods as unknown as PaymentMethodsService,
       deliveryZones as unknown as DeliveryZonesService,
+      auditLog as unknown as AuditLogService,
     );
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
       ok: true,
@@ -113,6 +119,12 @@ describe('OrdersService', () => {
       client_order_ref: 'checkout_test_key_123',
     });
     expect(odoo.confirmSalesOrder).toHaveBeenCalledWith(123);
+    expect(auditLog.record).toHaveBeenCalledWith(
+      undefined, 'ORDER_CREATED', 'sale_order', '123', expect.objectContaining({ result: 'success' }),
+    );
+    expect(auditLog.record).toHaveBeenCalledWith(
+      undefined, 'ORDER_CONFIRMED', 'sale_order', '123', expect.objectContaining({ result: 'success' }),
+    );
   });
 
   it('keeps a mobile-money order pending until the payment webhook', async () => {
@@ -137,6 +149,9 @@ describe('OrdersService', () => {
       }),
     );
     expect(odoo.confirmSalesOrder).not.toHaveBeenCalled();
+    expect(auditLog.record).toHaveBeenCalledWith(
+      undefined, 'PAYMENT_INITIATED', 'sale_order', '123', expect.objectContaining({ provider: 'wave' }),
+    );
   });
 
   it('rejects an unknown or inactive payment method', async () => {
@@ -179,6 +194,12 @@ describe('OrdersService', () => {
     await expect(service.processWaveWebhook(body, `t=${timestamp},v1=${signature}`))
       .resolves.toEqual({ received: true });
     expect(odoo.confirmSalesOrder).toHaveBeenCalledWith(123);
+    expect(auditLog.record).toHaveBeenCalledWith(
+      undefined, 'PAYMENT_CONFIRMED', 'sale_order', '123', expect.objectContaining({ provider: 'wave' }),
+    );
+    expect(auditLog.record).toHaveBeenCalledWith(
+      undefined, 'ORDER_CONFIRMED', 'sale_order', '123', expect.objectContaining({ source: 'wave_webhook' }),
+    );
   });
 
   it('rejects an order when Odoo stock is insufficient', async () => {

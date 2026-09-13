@@ -27,6 +27,8 @@ import {
 } from './cms.dto';
 import { CmsService } from './cms.service';
 import { AdminAccessGuard, RequireRoles } from '../admin-auth/admin-auth.guard';
+import { CurrentAdmin } from '../admin-auth/current-admin.decorator';
+import type { AdminUser } from '../admin-auth/admin-auth.service';
 import { ROLE_SETS } from '../admin-auth/roles';
 
 interface HeaderResponse {
@@ -59,9 +61,10 @@ export class AdminCmsController {
   createArticle(
     @Headers('x-admin-import-token') token: string | undefined,
     @Body() dto: CreateArticleDto,
+    @CurrentAdmin() actor: AdminUser,
   ) {
     this.authorize(token);
-    return this.cms.createArticle(dto);
+    return this.cms.createArticle(dto, actor);
   }
 
   @Post('articles/:id/preview-token')
@@ -80,9 +83,10 @@ export class AdminCmsController {
     @Headers('x-admin-import-token') token: string | undefined,
     @Param('id') id: string,
     @Body() dto: UpdateArticleDto,
+    @CurrentAdmin() actor: AdminUser,
   ) {
     this.authorize(token);
-    return this.cms.updateArticle(id, dto);
+    return this.cms.updateArticle(id, dto, actor);
   }
 
   @Delete('articles/:id')

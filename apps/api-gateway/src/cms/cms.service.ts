@@ -6,6 +6,8 @@ import {
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import sanitizeHtml from 'sanitize-html';
 import { PortalDatabaseService } from '../portal-database/portal-database.service';
+import { AuditLogService } from '../audit-log/audit-log.service';
+import type { AdminUser } from '../admin-auth/admin-auth.service';
 import {
   CreateArticleDto,
   CreateFaqDto,
@@ -26,7 +28,10 @@ const ALLOWED_MEDIA_TYPES = new Set([
 
 @Injectable()
 export class CmsService {
-  constructor(private readonly db: PortalDatabaseService) {}
+  constructor(
+    private readonly db: PortalDatabaseService,
+    private readonly auditLog: AuditLogService,
+  ) {}
 
   async overview() {
     const [
@@ -122,7 +127,7 @@ export class CmsService {
     return this.findArticleById(result.rows[0].article_id);
   }
 
-  async createArticle(dto: CreateArticleDto) {
+  async createArticle(dto: CreateArticleDto, actor?: AdminUser) {
     const id = randomUUID();
     const slug = slugify(dto.slug || dto.title);
     const articles = this.db.table('cms_articles');
@@ -152,11 +157,18 @@ export class CmsService {
       ],
     );
     await this.replaceArticleTags(id, dto.tagIds);
+    if (dto.status === 'published') {
+      await this.auditLog.record(actor, 'CONTENT_PUBLISHED', 'cms_article', id, {
+        source: 'admin',
+        title: dto.title.trim(),
+        result: 'success',
+      });
+    }
     return this.findArticleById(id);
   }
 
-  async updateArticle(id: string, dto: UpdateArticleDto) {
-    await this.findArticleById(id);
+  async updateArticle(id: string, dto: UpdateArticleDto, actor?: AdminUser) {
+    const previous = await this.findArticleById(id);
     const fields: string[] = [];
     const values: unknown[] = [];
     const add = (column: string, value: unknown) => {
@@ -192,6 +204,13 @@ export class CmsService {
       );
     }
     if (dto.tagIds !== undefined) await this.replaceArticleTags(id, dto.tagIds);
+    if (dto.status === 'published' && previous.status !== 'published') {
+      await this.auditLog.record(actor, 'CONTENT_PUBLISHED', 'cms_article', id, {
+        source: 'admin',
+        title: dto.title?.trim() ?? previous.title,
+        result: 'success',
+      });
+    }
     return this.findArticleById(id);
   }
 
