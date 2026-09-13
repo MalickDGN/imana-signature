@@ -14,6 +14,7 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { PortalDatabaseService } from '../portal-database/portal-database.service';
 import { PaymentMethodsService } from '../payment-methods/payment-methods.service';
 import { DeliveryZonesService } from '../delivery-zones/delivery-zones.service';
+import { AuditLogService } from '../audit-log/audit-log.service';
 
 @Injectable()
 export class OrdersService {
@@ -25,6 +26,7 @@ export class OrdersService {
     private readonly configService: ConfigService,
     private readonly paymentMethods: PaymentMethodsService,
     private readonly deliveryZones: DeliveryZonesService,
+    private readonly auditLog: AuditLogService,
     @Optional() private readonly db?: PortalDatabaseService,
   ) {}
 
@@ -101,10 +103,22 @@ export class OrdersService {
       order_line: orderLines,
       client_order_ref: idempotencyKey,
     });
+    await this.auditLog.record(undefined, 'ORDER_CREATED', 'sale_order', String(orderId), {
+      correlationId: idempotencyKey,
+      source: 'checkout',
+      paymentMethod: paymentMethod.code,
+      result: 'success',
+    });
 
     if (isWave) {
       const paymentUrl = await this.createWaveCheckout(orderId, createOrderDto.shippingAddress.phone);
       await this.recordPayment(orderId, createOrderDto.shippingAddress.phone);
+      await this.auditLog.record(undefined, 'PAYMENT_INITIATED', 'sale_order', String(orderId), {
+        correlationId: idempotencyKey,
+        source: 'checkout',
+        provider: 'wave',
+        result: 'success',
+      });
       this.logger.log(`Wave checkout created for order ${orderId}.`);
       return {
         id: orderId,
@@ -114,6 +128,12 @@ export class OrdersService {
       };
     } else {
       await this.odooService.confirmSalesOrder(orderId);
+      await this.auditLog.record(undefined, 'ORDER_CONFIRMED', 'sale_order', String(orderId), {
+        correlationId: idempotencyKey,
+        source: 'checkout',
+        paymentMethod: paymentMethod.code,
+        result: 'success',
+      });
     }
 
     return {
@@ -147,6 +167,16 @@ export class OrdersService {
         [orderId, event.data.transaction_id ?? null],
       );
     }
+    await this.auditLog.record(undefined, 'PAYMENT_CONFIRMED', 'sale_order', String(orderId), {
+      source: 'wave_webhook',
+      provider: 'wave',
+      transactionId: event.data.transaction_id ?? null,
+      result: 'success',
+    });
+    await this.auditLog.record(undefined, 'ORDER_CONFIRMED', 'sale_order', String(orderId), {
+      source: 'wave_webhook',
+      result: 'success',
+    });
     return { received: true };
   }
 

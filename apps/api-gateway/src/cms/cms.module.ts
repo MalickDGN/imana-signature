@@ -2,9 +2,10 @@ import { Module } from '@nestjs/common';
 import { AdminCmsController, PublicCmsController } from './cms.controller';
 import { CmsService } from './cms.service';
 import { AdminAuthModule } from '../admin-auth/admin-auth.module';
+import { AuditLogModule } from '../audit-log/audit-log.module';
 
 @Module({
-  imports: [AdminAuthModule],
+  imports: [AdminAuthModule, AuditLogModule],
   controllers: [AdminCmsController, PublicCmsController],
   providers: [CmsService],
   exports: [CmsService],

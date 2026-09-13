@@ -59,7 +59,7 @@ Voir `docs/audit/admin-portal-audit.md` pour le détail de la revue initiale (bu
 | Zones de livraison | ✅ CRUD, branché sur le checkout réel (nouveau) |
 | Produits | ⚠️ édition prix uniquement (nouveau) — création via import Excel existant |
 | Utilisateurs admin | ✅ CRUD (nouveau) — auparavant impossible de créer un 2ᵉ compte |
-| Journal d'audit | ✅ (nouveau) — couvre les nouveaux modules, pas rétrofité sur CMS/Analytics existants |
+| Journal d'audit | ✅ couvre les modules admin (users/orders/payment-methods/delivery-zones/products/social) + événements métier `ORDER_CREATED`/`PAYMENT_INITIATED`/`PAYMENT_CONFIRMED`/`ORDER_CONFIRMED`/`CONTENT_PUBLISHED` (feature/audit-trail-business-events) |
 | SEO | ⚠️ diagnostic articles/produits (nouveau) |
 | Intégrations | ⚠️ statut live Odoo/Wave/Postgres (nouveau, remplace une liste codée en dur) |
 | Publications sociales | ⚠️ CRUD + action publier (webhook `SOCIAL_PUBLISH_WEBHOOK_URL` non configuré dans cet environnement) |
@@ -85,11 +85,11 @@ Voir `docs/audit/admin-portal-audit.md` pour le détail de la revue initiale (bu
 |---|---|
 | Secrets serveur uniquement | ✅ (`.env`, jamais exposés au frontend) |
 | RBAC admin | ✅ rôles granulaires (`ADMIN_ROLES`, `ROLE_SETS`) |
-| Audit trail | ⚠️ partiel (nouveaux modules admin uniquement, pas d'événements `ORDER_CREATED`/`PAYMENT_CONFIRMED`/etc. au sens FEAT-12.03) |
+| Audit trail | ✅ événements métier `ORDER_CREATED`/`PAYMENT_INITIATED`/`PAYMENT_CONFIRMED`/`ORDER_CONFIRMED`/`CONTENT_PUBLISHED` capturés (`orders.service.ts`, `cms.service.ts`) ; `DELIVERY_*`/`INVOICE_CREATED`/`PAYMENT_RECONCILED`/`PDF_GENERATED`/`WHATSAPP_SENT` non applicables (fonctions correspondantes non implémentées) ; `SYNC_*` couverts séparément par `etl_jobs`/`etl_job_events` (non dupliqués dans `audit_logs` pour éviter deux systèmes parallèles) |
 | Observabilité distribuée (request ID, traces, métriques) | ❌ non implémenté |
 | Vulnérabilités dépendances | ✅ critiques corrigées cette session (voir `baseline.md`) |
 
 ## Verdict global (critères §19 du prompt maître)
 
-Satisfaits : 1, 3, 4 (partiellement — auth client encore legacy), 5, 6, 7, 8 (partiel), 10, 12 (Wave), 24, 25 (partiel).
-Non satisfaits / non commencés : 2 (consolidation legacy auth client), 8 (Orange Money), 11, 13, 15–21 (WhatsApp, ETL Odoo source, IA migration), 22–23 (audit trail complet, observabilité), 26–30 (gouvernance Git, releases, sécurité globale, doc technique complète).
+Satisfaits : 1, 3, 4 (partiellement — auth client encore legacy), 5, 6, 7, 8 (partiel), 10, 12 (Wave), 22 (audit trail des événements métier clés), 24, 25 (partiel), 26 (branches protégées sur `main`).
+Non satisfaits / non commencés : 2 (consolidation legacy auth client), 8 (Orange Money), 11, 13, 15–21 (WhatsApp, ETL Odoo source, IA migration), 23 (observabilité distribuée — request ID, traces, métriques), 27–30 (releases reproductibles, rollback documenté, sécurité globale, doc technique complète).
